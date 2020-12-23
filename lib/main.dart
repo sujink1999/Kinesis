@@ -33,9 +33,9 @@ class MyApp extends StatelessWidget {
 }
 
 class MyPage extends StatelessWidget {
-  static const platform = const MethodChannel('samples.flutter.dev/battery');
+  MethodChannel platform;
 
-  Future<void> _getBatteryLevel() async {
+  Future<void> _getBatteryLevel(BuildContext context) async {
     String batteryLevel;
     try {
       final int result = await platform.invokeMethod('getBatteryLevel');
@@ -43,19 +43,34 @@ class MyPage extends StatelessWidget {
       print(batteryLevel);
     } on PlatformException catch (e) {
       batteryLevel = "Failed to get battery level: '${e.message}'.";
-    } 
+    }
+  }
+
+  Future<void> _onPlatformViewCreated(id) async{
+    platform = MethodChannel("StreamView/$id");
+    final result = await platform.invokeMethod('startStreaming');
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Center(
-        child: IconButton(
-          icon: Icon(
-            Icons.account_circle_outlined,
+    final mediaQuery = MediaQuery.of(context);
+    return SafeArea(
+      child: Scaffold(
+        body: Container(
+          height: mediaQuery.size.height - mediaQuery.padding.top - mediaQuery.padding.bottom,
+          width: mediaQuery.size.width,
+          child: Center(
+            child : Container(
+              padding: EdgeInsets.all(10),
+              child: AndroidView(
+                viewType: 'StreamView',
+                onPlatformViewCreated: (id){
+                  _onPlatformViewCreated(id);
+                },
+              ),
+            ),
           ),
-          onPressed: _getBatteryLevel,
-        ),
+        )
       ),
     );
   }

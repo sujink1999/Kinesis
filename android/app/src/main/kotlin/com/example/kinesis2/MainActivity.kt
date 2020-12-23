@@ -31,33 +31,39 @@ import java.security.Permission
 import java.util.concurrent.CountDownLatch
 
 class MainActivity: FlutterActivity() {
+
     private val aCHANNEL = "samples.flutter.dev/battery"
 
     override fun configureFlutterEngine(@NonNull flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
-        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, aCHANNEL).setMethodCallHandler {
-            // Note: this method is invoked on the main thread.
-            call, result ->
-            if (call.method == "getBatteryLevel") {
-                val batteryLevel = getBatteryLevel()
-                if (batteryLevel != -1) {
-                    result.success(batteryLevel)
-                } else {
-                    result.error("UNAVAILABLE", "Battery level not available.", null)
-                }
-
-
-                Toast.makeText(applicationContext, "Permission is " +checkPersmission(), Toast.LENGTH_SHORT).show()
-                if (checkPersmission()){
-                    initializeAWSMobileClient()
-                }else{
-                    requestPermission()
-                }
-
-            } else {
-                result.notImplemented()
-            }
-        }
+        flutterEngine
+                .platformViewsController
+                .registry
+                .registerViewFactory("StreamView", StreamViewFactory(flutterEngine.dartExecutor.binaryMessenger))
+//        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, aCHANNEL).setMethodCallHandler {
+//            // Note: this method is invoked on the main thread.
+//            call, result ->
+//            if (call.method == "getBatteryLevel") {
+//                val batteryLevel = getBatteryLevel()
+//                if (batteryLevel != -1) {
+//                    result.success(batteryLevel)
+//                } else {
+//                    result.error("UNAVAILABLE", "Battery level not available.", null)
+//                }
+//
+//
+//                Toast.makeText(applicationContext, "Permission is " +checkPersmission(), Toast.LENGTH_SHORT).show()
+//                if (checkPersmission()){
+//                    initializeAWSMobileClient()
+//
+//                }else{
+//                    requestPermission()
+//                }
+//
+//            } else {
+//                result.notImplemented()
+//            }
+//        }
     }
 
     private fun checkPersmission(): Boolean {
