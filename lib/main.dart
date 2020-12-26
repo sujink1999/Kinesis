@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:kinesis2/stream_view.dart';
 
 void main() {
   runApp(MyApp());
@@ -34,21 +35,11 @@ class MyApp extends StatelessWidget {
 
 class MyPage extends StatelessWidget {
   MethodChannel platform;
+  StreamViewController streamViewController;
 
-  Future<void> _getBatteryLevel(BuildContext context) async {
-    String batteryLevel;
-    try {
-      final int result = await platform.invokeMethod('getBatteryLevel');
-      batteryLevel = 'Battery level at $result % .';
-      print(batteryLevel);
-    } on PlatformException catch (e) {
-      batteryLevel = "Failed to get battery level: '${e.message}'.";
-    }
-  }
-
-  Future<void> _onPlatformViewCreated(id) async{
-    platform = MethodChannel("StreamView/$id");
-    final result = await platform.invokeMethod('startStreaming');
+  void _onStreamViewCreated(StreamViewController controller) {
+    streamViewController = controller;
+    streamViewController.startSteaming();
   }
 
   @override
@@ -56,22 +47,37 @@ class MyPage extends StatelessWidget {
     final mediaQuery = MediaQuery.of(context);
     return SafeArea(
       child: Scaffold(
-        body: Container(
-          height: mediaQuery.size.height - mediaQuery.padding.top - mediaQuery.padding.bottom,
-          width: mediaQuery.size.width,
-          child: Center(
-            child : Container(
-              padding: EdgeInsets.all(10),
-              child: AndroidView(
-                viewType: 'StreamView',
-                onPlatformViewCreated: (id){
-                  _onPlatformViewCreated(id);
-                },
+        body: Stack(
+          children: [
+            Container(
+              height: mediaQuery.size.height -
+                  mediaQuery.padding.top -
+                  mediaQuery.padding.bottom,
+              width: mediaQuery.size.width,
+              child: Center(
+                child: Container(
+                  padding: EdgeInsets.all(10),
+                  child: StreamView(
+                    onStreamViewCreated: _onStreamViewCreated,
+                  ),
+                ),
               ),
             ),
-          ),
-        )
+            IconButton(icon: Icon(Icons.account_circle_outlined), onPressed: (){
+              Navigator.push(context, MaterialPageRoute(builder: (context)=>NewScreen()));
+            }),
+          ],
+        ),
       ),
+    );
+  }
+}
+
+class NewScreen extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      child: Scaffold(),
     );
   }
 }

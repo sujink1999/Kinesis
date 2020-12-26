@@ -9,9 +9,11 @@ class StreamView extends StatefulWidget {
   const StreamView({
     Key key,
     this.onStreamViewCreated,
+    this.streamViewController,
   }) : super(key: key);
 
   final StreamViewCreatedCallback onStreamViewCreated;
+  final StreamViewController streamViewController;
 
   @override
   State<StatefulWidget> createState() => _StreamViewState();
@@ -44,8 +46,11 @@ class StreamViewController {
 
   final MethodChannel _channel;
 
-  Future<void> startSteaming(String text) async {
-    assert(text != null);
-    return _channel.invokeMethod('startStreaming', text);
+  Future<void> startSteaming() async {
+    return _channel.invokeMethod('startStreaming');
+  }
+
+  Future<void> stopStreaming() async {
+    return _channel.invokeMethod('stopStreaming');
   }
 }

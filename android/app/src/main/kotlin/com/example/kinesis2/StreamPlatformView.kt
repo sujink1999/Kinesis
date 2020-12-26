@@ -67,6 +67,7 @@ class StreamPlatformView internal constructor(private val context: Context?, bin
                     if (cameraMediaSource != null) cameraMediaSource!!.stop()
                     if (kinesisVideoClient != null) kinesisVideoClient!!.stopAllMediaSources()
                     KinesisVideoAndroidClientFactory.freeKinesisVideoClient()
+                    Log.d("Texture", "Texture destroyed")
                 } catch (e: KinesisVideoException) {
                     Log.e("Streaming", "failed to release kinesis video client", e)
                 }
@@ -93,10 +94,16 @@ class StreamPlatformView internal constructor(private val context: Context?, bin
 
     override fun onMethodCall(call: MethodCall, result: MethodChannel.Result) {
 
-        if (call.method == "startStreaming"){
+        when (call.method) {
+            "startStreaming" -> {
                 initializeAWSMobileClient()
-        }else{
-            result.notImplemented()
+            }
+            "stopStreaming" -> {
+                pauseStreaming()
+            }
+            else -> {
+                result.notImplemented()
+            }
         }
 
     }
