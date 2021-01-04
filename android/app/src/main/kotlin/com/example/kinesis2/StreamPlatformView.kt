@@ -1,30 +1,24 @@
 package com.example.kinesis2
 
-import android.Manifest
 import android.content.Context
-import android.content.Intent
-import android.content.pm.PackageManager
 import android.graphics.SurfaceTexture
-import android.os.Build
-import android.os.Handler
-import android.os.Looper
 import android.util.Log
 import android.util.Size
 import android.view.Surface
 import android.view.TextureView
 import android.view.View
-import android.widget.LinearLayout
 import android.widget.Toast
-import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
 import com.amazonaws.kinesisvideo.client.KinesisVideoClient
 import com.amazonaws.kinesisvideo.common.exception.KinesisVideoException
 import com.amazonaws.kinesisvideo.producer.StreamInfo
 import com.amazonaws.mobile.auth.core.internal.util.ThreadUtils.runOnUiThread
 import com.amazonaws.mobile.client.AWSMobileClient
 import com.amazonaws.mobile.client.Callback
+import com.amazonaws.mobile.client.SignInUIOptions
 import com.amazonaws.mobile.client.UserStateDetails
 import com.amazonaws.mobile.client.results.SignInResult
+import com.amazonaws.mobile.client.results.SignUpResult
+import com.amazonaws.mobile.client.results.Tokens
 import com.amazonaws.mobileconnectors.kinesisvideo.client.KinesisVideoAndroidClientFactory
 import com.amazonaws.mobileconnectors.kinesisvideo.mediasource.android.AndroidCameraMediaSource
 import com.amazonaws.mobileconnectors.kinesisvideo.mediasource.android.AndroidCameraMediaSourceConfiguration
@@ -35,6 +29,7 @@ import io.flutter.plugin.common.BinaryMessenger
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.platform.PlatformView
+import org.apache.http.client.CredentialsProvider
 import java.util.concurrent.CountDownLatch
 
 
@@ -132,10 +127,19 @@ class StreamPlatformView internal constructor(private val context: Context?, bin
     private fun signInAndMoveToNextScreen(){
         val auth = AWSMobileClient.getInstance()
         val v = HashMap<String, String>()
+        val user = HashMap<String, String>()
+        user["email"] = "lksujins@gmail.com"
         Log.d("Auth check", auth.isSignedIn.toString());
 
         if (auth.isSignedIn) {
-            setTextureView()
+            auth.getTokens(object : Callback<Tokens>{
+                override fun onResult(result: Tokens?) {
+                    setTextureView()
+                }
+
+                override fun onError(e: java.lang.Exception?) {
+                }
+            })
         } else {
             auth.signIn("+917299603606", "australia", v, object : Callback<SignInResult> {
                 override fun onResult(result: SignInResult?) {
@@ -146,6 +150,7 @@ class StreamPlatformView internal constructor(private val context: Context?, bin
                     Log.d("Sign in", e?.printStackTrace().toString())
                 }
             });
+
         }
     }
 
@@ -174,8 +179,8 @@ class StreamPlatformView internal constructor(private val context: Context?, bin
             runOnUiThread {
                     cameraMediaSource =  kinesisVideoClient?.createMediaSource("Stream", getCurrentConfiguration()) as AndroidCameraMediaSource
                     cameraMediaSource!!.setPreviewSurfaces(Surface(previewTexture))
-                    resumeStreaming()
             }
+            resumeStreaming()
 
         } catch (e: KinesisVideoException) {
             Log.e("Stream", "unable to start streaming")
